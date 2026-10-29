@@ -886,7 +886,7 @@ kbd {
 .toasts {
   position: fixed;
   right: 20px;
-  top: 16px;
+  top: 72px;
   z-index: 60;
   display: grid;
   gap: 8px;
