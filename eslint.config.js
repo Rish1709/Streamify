@@ -25,6 +25,13 @@ export default [
     },
   },
   {
+    files: ['e2e/**/*.cjs'],
+    languageOptions: {
+      sourceType: 'commonjs',
+      globals: { ...globals.node, ...globals.browser },
+    },
+  },
+  {
     files: ['client/vite.config.js'],
     languageOptions: { globals: globals.node },
   },
