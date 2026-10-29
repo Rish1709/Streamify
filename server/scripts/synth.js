@@ -14,12 +14,50 @@ const SCALES = {
 };
 
 const STYLES = {
-  lofi: { drums: 'boom-bap', bass: 'root', lead: 'sparse', wave: 'triangle', swing: 0.12, padLevel: 0.5, crackle: true },
-  synthwave: { drums: 'straight', bass: 'eighths', lead: 'arp', wave: 'saw', swing: 0, padLevel: 0.45 },
-  ambient: { drums: 'none', bass: 'drone', lead: 'sparse', wave: 'sine', swing: 0, padLevel: 0.8, echo: true },
+  lofi: {
+    drums: 'boom-bap',
+    bass: 'root',
+    lead: 'sparse',
+    wave: 'triangle',
+    swing: 0.12,
+    padLevel: 0.5,
+    crackle: true,
+  },
+  synthwave: {
+    drums: 'straight',
+    bass: 'eighths',
+    lead: 'arp',
+    wave: 'saw',
+    swing: 0,
+    padLevel: 0.45,
+  },
+  ambient: {
+    drums: 'none',
+    bass: 'drone',
+    lead: 'sparse',
+    wave: 'sine',
+    swing: 0,
+    padLevel: 0.8,
+    echo: true,
+  },
   house: { drums: 'four', bass: 'offbeat', lead: 'stab', wave: 'saw', swing: 0, padLevel: 0.35 },
-  chiptune: { drums: 'straight', bass: 'eighths', lead: 'arp', wave: 'square', swing: 0, padLevel: 0.25 },
-  downtempo: { drums: 'boom-bap', bass: 'root', lead: 'melody', wave: 'triangle', swing: 0.06, padLevel: 0.55, echo: true },
+  chiptune: {
+    drums: 'straight',
+    bass: 'eighths',
+    lead: 'arp',
+    wave: 'square',
+    swing: 0,
+    padLevel: 0.25,
+  },
+  downtempo: {
+    drums: 'boom-bap',
+    bass: 'root',
+    lead: 'melody',
+    wave: 'triangle',
+    swing: 0.06,
+    padLevel: 0.55,
+    echo: true,
+  },
 };
 
 export const STYLE_NAMES = Object.keys(STYLES);
@@ -113,7 +151,9 @@ export function renderTrack(spec) {
   const beat = (60 / spec.bpm) * SAMPLE_RATE;
   const bar = beat * 4;
   const degree = (d, octave = 0) =>
-    spec.root + 12 * octave + scale[((d % scale.length) + scale.length) % scale.length] +
+    spec.root +
+    12 * octave +
+    scale[((d % scale.length) + scale.length) % scale.length] +
     12 * Math.floor(d / scale.length);
   const melodyNotes = Array.from({ length: 16 }, () => Math.floor(rand() * scale.length));
 
@@ -140,7 +180,14 @@ export function renderTrack(spec) {
     // Bass.
     const bassHz = midiToHz(degree(chordRoot, -1) - 12);
     const bassAt = (pos, len, g = 0.22) =>
-      addNote(buf, { start: barStart + Math.floor(pos * beat), length: Math.floor(len * beat), hz: bassHz, wave: 'sine', gain: g, release: 0.05 });
+      addNote(buf, {
+        start: barStart + Math.floor(pos * beat),
+        length: Math.floor(len * beat),
+        hz: bassHz,
+        wave: 'sine',
+        gain: g,
+        release: 0.05,
+      });
     if (style.bass === 'drone') bassAt(0, 4, 0.12);
     if (style.bass === 'root') [0, 2.5].forEach((p) => bassAt(p, 1.2));
     if (style.bass === 'eighths') for (let e = 0; e < 8; e++) bassAt(e / 2, 0.4, 0.16);
@@ -149,8 +196,16 @@ export function renderTrack(spec) {
     // Lead.
     const leadGain = 0.06;
     const leadNote = (pos, len, d) =>
-      addNote(buf, { start: barStart + Math.floor(pos * beat), length: Math.floor(len * beat), hz: midiToHz(degree(d, 1)), wave: style.wave, gain: leadGain, release: 0.15 });
-    if (style.lead === 'arp') for (let s = 0; s < 8; s++) leadNote(s / 2, 0.4, chordRoot + [0, 2, 4, 7][s % 4]);
+      addNote(buf, {
+        start: barStart + Math.floor(pos * beat),
+        length: Math.floor(len * beat),
+        hz: midiToHz(degree(d, 1)),
+        wave: style.wave,
+        gain: leadGain,
+        release: 0.15,
+      });
+    if (style.lead === 'arp')
+      for (let s = 0; s < 8; s++) leadNote(s / 2, 0.4, chordRoot + [0, 2, 4, 7][s % 4]);
     if (style.lead === 'stab') [0.5, 1.5, 2.5, 3.5].forEach((p) => leadNote(p, 0.2, chordRoot + 4));
     if (style.lead === 'melody' || style.lead === 'sparse') {
       const notes = style.lead === 'sparse' ? 3 : 6;
@@ -162,7 +217,8 @@ export function renderTrack(spec) {
     }
 
     if (!drumsOn || style.drums === 'none') continue;
-    const at = (pos) => barStart + Math.floor(pos * beat + (pos % 1 === 0.5 ? style.swing * beat : 0));
+    const at = (pos) =>
+      barStart + Math.floor(pos * beat + (pos % 1 === 0.5 ? style.swing * beat : 0));
     if (style.drums === 'four') [0, 1, 2, 3].forEach((p) => kick(buf, at(p), 0.5));
     if (style.drums === 'straight') [0, 2].forEach((p) => kick(buf, at(p), 0.45));
     if (style.drums === 'boom-bap') [0, 1.5, 2.5].forEach((p) => kick(buf, at(p), 0.45));

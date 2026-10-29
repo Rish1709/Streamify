@@ -17,10 +17,17 @@ describe('playlists', () => {
     expect(created.status).toBe(201);
     const { id } = created.body.playlist;
     expect(created.body.playlist).toMatchObject({
-      name: 'My list', description: 'desc', isPublic: false, trackCount: 0, isOwner: true, tracks: [],
+      name: 'My list',
+      description: 'desc',
+      isPublic: false,
+      trackCount: 0,
+      isOwner: true,
+      tracks: [],
     });
 
-    const updated = await c.patch(`/api/v1/playlists/${id}`).send({ name: 'Renamed', isPublic: true });
+    const updated = await c
+      .patch(`/api/v1/playlists/${id}`)
+      .send({ name: 'Renamed', isPublic: true });
     expect(updated.status).toBe(200);
     expect(updated.body.playlist).toMatchObject({ name: 'Renamed', isPublic: true });
 
@@ -37,7 +44,9 @@ describe('playlists', () => {
     const id = body.playlist.id;
     expect((await c.patch(`/api/v1/playlists/${id}`).send({})).status).toBe(400);
     expect((await c.patch(`/api/v1/playlists/${id}`).send({ owner: 'someone' })).status).toBe(400);
-    expect((await c.post(`/api/v1/playlists/${id}/tracks`).send({ trackId: 'bad' })).status).toBe(400);
+    expect((await c.post(`/api/v1/playlists/${id}/tracks`).send({ trackId: 'bad' })).status).toBe(
+      400,
+    );
   });
 
   it('adds, de-duplicates, orders, reorders and removes tracks', async () => {
@@ -55,15 +64,21 @@ describe('playlists', () => {
     expect(dup.body.added).toBe(false);
     expect(dup.body.playlist.tracks.map((t) => t.id)).toEqual([t1.id, t2.id, t3.id]);
 
-    const reordered = await c.put(`/api/v1/playlists/${id}/tracks`).send({ trackIds: [t3.id, t1.id, t2.id] });
+    const reordered = await c
+      .put(`/api/v1/playlists/${id}/tracks`)
+      .send({ trackIds: [t3.id, t1.id, t2.id] });
     expect(reordered.body.playlist.tracks.map((t) => t.id)).toEqual([t3.id, t1.id, t2.id]);
-    const badOrder = await c.put(`/api/v1/playlists/${id}/tracks`).send({ trackIds: [t3.id, t1.id] });
+    const badOrder = await c
+      .put(`/api/v1/playlists/${id}/tracks`)
+      .send({ trackIds: [t3.id, t1.id] });
     expect(badOrder.status).toBe(400);
 
     const removed = await c.delete(`/api/v1/playlists/${id}/tracks/${t1.id}`);
     expect(removed.body.playlist.tracks.map((t) => t.id)).toEqual([t3.id, t2.id]);
 
-    const missing = await c.post(`/api/v1/playlists/${id}/tracks`).send({ trackId: 'aaaaaaaaaaaaaaaaaaaaaaaa' });
+    const missing = await c
+      .post(`/api/v1/playlists/${id}/tracks`)
+      .send({ trackId: 'aaaaaaaaaaaaaaaaaaaaaaaa' });
     expect(missing.status).toBe(404);
   });
 
@@ -76,17 +91,25 @@ describe('playlists', () => {
 
     // Private: invisible to others (404, does not reveal existence).
     expect((await other.get(`/api/v1/playlists/${privateId}`)).status).toBe(404);
-    expect((await other.patch(`/api/v1/playlists/${privateId}`).send({ name: 'x' })).status).toBe(404);
+    expect((await other.patch(`/api/v1/playlists/${privateId}`).send({ name: 'x' })).status).toBe(
+      404,
+    );
     expect((await other.delete(`/api/v1/playlists/${privateId}`)).status).toBe(404);
 
     // Public: readable, but still not writable.
     const view = await other.get(`/api/v1/playlists/${publicId}`);
     expect(view.status).toBe(200);
     expect(view.body.playlist.isOwner).toBe(false);
-    expect((await other.patch(`/api/v1/playlists/${publicId}`).send({ name: 'Hacked' })).status).toBe(403);
+    expect(
+      (await other.patch(`/api/v1/playlists/${publicId}`).send({ name: 'Hacked' })).status,
+    ).toBe(403);
     expect((await other.delete(`/api/v1/playlists/${publicId}`)).status).toBe(403);
-    expect((await other.post(`/api/v1/playlists/${publicId}/tracks`).send({ trackId: t.id })).status).toBe(403);
-    expect((await other.put(`/api/v1/playlists/${publicId}/tracks`).send({ trackIds: [] })).status).toBe(403);
+    expect(
+      (await other.post(`/api/v1/playlists/${publicId}/tracks`).send({ trackId: t.id })).status,
+    ).toBe(403);
+    expect(
+      (await other.put(`/api/v1/playlists/${publicId}/tracks`).send({ trackIds: [] })).status,
+    ).toBe(403);
 
     // Nothing changed.
     const after = await owner.get(`/api/v1/playlists/${publicId}`);

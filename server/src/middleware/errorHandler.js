@@ -7,7 +7,6 @@ export function notFoundHandler(req, _res, next) {
   next(new AppError(404, 'NOT_FOUND', `Route ${req.method} ${req.path} not found`));
 }
 
-// eslint-disable-next-line no-unused-vars
 export function errorHandler(err, req, res, _next) {
   let status = 500;
   let body = { code: 'INTERNAL_ERROR', message: 'Something went wrong' };

@@ -15,9 +15,7 @@ export function useTestDb() {
   });
   beforeEach(async () => {
     resetPresence();
-    await Promise.all(
-      Object.values(mongoose.connection.collections).map((c) => c.deleteMany({})),
-    );
+    await Promise.all(Object.values(mongoose.connection.collections).map((c) => c.deleteMany({})));
   });
   afterAll(async () => {
     await mongoose.connection.dropDatabase();
@@ -55,13 +53,14 @@ export async function signUp(c = client(), overrides = {}) {
     ...overrides,
   };
   const res = await c.post('/api/v1/auth/register').send(body);
-  if (res.status !== 201) throw new Error(`signUp failed: ${res.status} ${JSON.stringify(res.body)}`);
+  if (res.status !== 201)
+    throw new Error(`signUp failed: ${res.status} ${JSON.stringify(res.body)}`);
   c.user = res.body.user;
   c.cookie = res.headers['set-cookie'].find((h) => h.startsWith('streamify_token=')).split(';')[0];
   return c;
 }
 
-export async function makeTracks(n, overrides = (i) => ({})) {
+export async function makeTracks(n, overrides = () => ({})) {
   const docs = Array.from({ length: n }, (_, i) => ({
     title: `Track ${String(i).padStart(2, '0')}`,
     artist: i % 2 ? 'Odd Artist' : 'Even Artist',

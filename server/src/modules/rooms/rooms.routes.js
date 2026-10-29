@@ -12,7 +12,13 @@ import { createRoom, findRoom, isHost, toRoomState, updateRoomSettings } from '.
 export const roomsRouter = Router();
 roomsRouter.use(requireAuth);
 
-const codeParams = { code: z.string().trim().toUpperCase().regex(/^[A-Z0-9]{6}$/, 'Invalid room code') };
+const codeParams = {
+  code: z
+    .string()
+    .trim()
+    .toUpperCase()
+    .regex(/^[A-Z0-9]{6}$/, 'Invalid room code'),
+};
 const settings = {
   name: z.string().trim().min(1, 'Name is required').max(60),
   isPublic: z.boolean(),
@@ -116,7 +122,10 @@ roomsRouter.get(
     const { before, limit } = req.valid.query;
     const filter = { room: room._id };
     if (before) {
-      const cursor = await ChatMessage.findOne({ _id: before, room: room._id }, { createdAt: 1 }).lean();
+      const cursor = await ChatMessage.findOne(
+        { _id: before, room: room._id },
+        { createdAt: 1 },
+      ).lean();
       if (cursor) {
         filter.$or = [
           { createdAt: { $lt: cursor.createdAt } },

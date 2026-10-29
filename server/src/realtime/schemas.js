@@ -1,10 +1,18 @@
 import { z } from 'zod';
 
 const objectId = z.string().regex(/^[a-f\d]{24}$/i, 'Invalid id');
-const position = z.number().finite().min(0).max(24 * 60 * 60);
+const position = z
+  .number()
+  .finite()
+  .min(0)
+  .max(24 * 60 * 60);
 
 export const joinSchema = z.object({
-  code: z.string().trim().toUpperCase().regex(/^[A-Z0-9]{6}$/, 'Invalid room code'),
+  code: z
+    .string()
+    .trim()
+    .toUpperCase()
+    .regex(/^[A-Z0-9]{6}$/, 'Invalid room code'),
 });
 
 export const chatSchema = z.object({

@@ -13,8 +13,19 @@ import { SORT_KEYS, getTrack, listGenres, listTracks, resolveAudioPath } from '.
 export const tracksRouter = Router();
 
 const listQuery = {
-  q: z.string().trim().max(100).optional().transform((v) => v || undefined),
-  genre: z.string().trim().toLowerCase().max(40).optional().transform((v) => v || undefined),
+  q: z
+    .string()
+    .trim()
+    .max(100)
+    .optional()
+    .transform((v) => v || undefined),
+  genre: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .max(40)
+    .optional()
+    .transform((v) => v || undefined),
   sort: z.enum(SORT_KEYS).optional(),
   ...pageQuerySchema,
 };

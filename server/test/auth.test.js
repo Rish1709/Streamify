@@ -11,7 +11,11 @@ describe('auth', () => {
       .post('/api/v1/auth/register')
       .send({ username: 'alice', email: 'Alice@Example.com', password: 'secret123' });
     expect(res.status).toBe(201);
-    expect(res.body.user).toEqual({ id: expect.any(String), username: 'alice', email: 'alice@example.com' });
+    expect(res.body.user).toEqual({
+      id: expect.any(String),
+      username: 'alice',
+      email: 'alice@example.com',
+    });
     expect(JSON.stringify(res.body)).not.toMatch(/password|token/i);
     const cookie = res.headers['set-cookie'][0];
     expect(cookie).toMatch(/^streamify_token=/);

@@ -94,7 +94,9 @@ describe('rooms REST', () => {
 
   it('lets only the host change settings or close the room', async () => {
     const { host, guest, code } = await setupRoom();
-    expect((await guest.patch(`/api/v1/rooms/${code}`).send({ controlMode: 'everyone' })).status).toBe(403);
+    expect(
+      (await guest.patch(`/api/v1/rooms/${code}`).send({ controlMode: 'everyone' })).status,
+    ).toBe(403);
     expect((await guest.delete(`/api/v1/rooms/${code}`)).status).toBe(403);
     const ok = await host.patch(`/api/v1/rooms/${code}`).send({ controlMode: 'everyone' });
     expect(ok.body.room.controlMode).toBe('everyone');
@@ -181,7 +183,9 @@ describe('rooms realtime', () => {
     const s = await connect(host);
     await emit(s, 'room:join', { code });
     expect((await emit(s, 'chat:send', { text: '   ' })).error.code).toBe('VALIDATION_ERROR');
-    expect((await emit(s, 'chat:send', { text: 'x'.repeat(501) })).error.code).toBe('VALIDATION_ERROR');
+    expect((await emit(s, 'chat:send', { text: 'x'.repeat(501) })).error.code).toBe(
+      'VALIDATION_ERROR',
+    );
     expect((await emit(s, 'chat:send', { text: 42 })).error.code).toBe('VALIDATION_ERROR');
     const results = [];
     for (let i = 0; i < 7; i++) results.push(await emit(s, 'chat:send', { text: `m${i}` }));
@@ -199,9 +203,13 @@ describe('rooms realtime', () => {
     }
     const first = await host.get(`/api/v1/rooms/${code}/messages?limit=2`);
     expect(first.body.items.map((m) => m.text)).toEqual(['m3', 'm4']);
-    const second = await host.get(`/api/v1/rooms/${code}/messages?limit=2&before=${first.body.nextCursor}`);
+    const second = await host.get(
+      `/api/v1/rooms/${code}/messages?limit=2&before=${first.body.nextCursor}`,
+    );
     expect(second.body.items.map((m) => m.text)).toEqual(['m1', 'm2']);
-    const third = await host.get(`/api/v1/rooms/${code}/messages?limit=2&before=${second.body.nextCursor}`);
+    const third = await host.get(
+      `/api/v1/rooms/${code}/messages?limit=2&before=${second.body.nextCursor}`,
+    );
     expect(third.body.items.map((m) => m.text)).toEqual(['m0']);
     expect(third.body.nextCursor).toBeNull();
   }, 15_000);
@@ -220,7 +228,11 @@ describe('rooms realtime', () => {
     const res = await emit(hs, 'playback:action', { type: 'setTrack', trackId: tracks[0].id });
     expect(res.ok).toBe(true);
     const state = await guestSees;
-    expect(state.playback).toMatchObject({ isPlaying: true, positionSec: 0, track: { id: tracks[0].id } });
+    expect(state.playback).toMatchObject({
+      isPlaying: true,
+      positionSec: 0,
+      track: { id: tracks[0].id },
+    });
     expect(state.queue.map((t) => t.id)).toEqual([tracks[0].id]);
 
     const paused = next(gs, 'room:state', (s) => !s.playback.isPlaying);
@@ -231,7 +243,9 @@ describe('rooms realtime', () => {
     const seek = await emit(hs, 'playback:action', { type: 'seek', positionSec: 999 });
     expect(seek.state.playback.positionSec).toBe(60);
     expect((await emit(gs, 'playback:action', { type: 'pause' })).error.code).toBe('FORBIDDEN');
-    expect((await emit(hs, 'playback:action', { type: 'explode' })).error.code).toBe('VALIDATION_ERROR');
+    expect((await emit(hs, 'playback:action', { type: 'explode' })).error.code).toBe(
+      'VALIDATION_ERROR',
+    );
   });
 
   it('allows guests to control playback when the host enables "everyone" mode', async () => {
@@ -240,7 +254,9 @@ describe('rooms realtime', () => {
     const gs = await connect(guest);
     await emit(hs, 'room:join', { code });
     await emit(gs, 'room:join', { code });
-    expect((await emit(gs, 'room:settings', { controlMode: 'everyone' })).error.code).toBe('FORBIDDEN');
+    expect((await emit(gs, 'room:settings', { controlMode: 'everyone' })).error.code).toBe(
+      'FORBIDDEN',
+    );
     expect((await emit(hs, 'room:settings', { controlMode: 'everyone' })).ok).toBe(true);
     const res = await emit(gs, 'playback:action', { type: 'queueAdd', trackId: tracks[1].id });
     expect(res.ok).toBe(true);
@@ -269,7 +285,11 @@ describe('rooms realtime', () => {
 
     // End of queue: stops instead of wrapping around.
     const v2 = room.body.room.playback.version;
-    const end = await emit(gs, 'playback:action', { type: 'ended', trackId: tracks[1].id, version: v2 });
+    const end = await emit(gs, 'playback:action', {
+      type: 'ended',
+      trackId: tracks[1].id,
+      version: v2,
+    });
     expect(end.state.playback).toMatchObject({ isPlaying: false, track: { id: tracks[1].id } });
   });
 

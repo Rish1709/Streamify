@@ -56,7 +56,9 @@ export async function seed({ reset = false, generate = true, log = console.log }
     },
   }));
   const res = await Track.bulkWrite(ops, { timestamps: false });
-  log(`Tracks: ${res.upsertedCount} inserted, ${res.modifiedCount} updated, ${CATALOG.length} total.`);
+  log(
+    `Tracks: ${res.upsertedCount} inserted, ${res.modifiedCount} updated, ${CATALOG.length} total.`,
+  );
   await invalidateCatalog();
 
   const users = [];
@@ -75,7 +77,9 @@ export async function seed({ reset = false, generate = true, log = console.log }
 
   const [demo] = users;
   if (!(await Playlist.exists({ owner: demo._id }))) {
-    const chill = await Track.find({ genre: { $in: ['lofi', 'ambient'] } }).sort({ title: 1 }).lean();
+    const chill = await Track.find({ genre: { $in: ['lofi', 'ambient'] } })
+      .sort({ title: 1 })
+      .lean();
     await Playlist.create({
       owner: demo._id,
       name: 'Focus Mix',

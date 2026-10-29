@@ -64,7 +64,10 @@ async function detail(playlistId, userId) {
     ownerName: p.owner?.username ?? 'unknown',
     isOwner: String(p.owner?._id) === String(userId),
     // Keep the playlist's order; skip tracks removed from the catalogue.
-    tracks: p.tracks.map((id) => byId.get(String(id))).filter(Boolean).map(toTrackDto),
+    tracks: p.tracks
+      .map((id) => byId.get(String(id)))
+      .filter(Boolean)
+      .map(toTrackDto),
   };
 }
 
@@ -93,12 +96,16 @@ playlistsRouter.get('/:id', validate({ params: idParams }), async (req, res) => 
   res.json({ playlist: await detail(p._id, req.user._id) });
 });
 
-playlistsRouter.patch('/:id', validate({ params: idParams, body: updateBody }), async (req, res) => {
-  const playlist = await loadOwned(req.valid.params.id, req.user);
-  playlist.set(req.valid.body);
-  await playlist.save();
-  res.json({ playlist: await detail(playlist._id, req.user._id) });
-});
+playlistsRouter.patch(
+  '/:id',
+  validate({ params: idParams, body: updateBody }),
+  async (req, res) => {
+    const playlist = await loadOwned(req.valid.params.id, req.user);
+    playlist.set(req.valid.body);
+    await playlist.save();
+    res.json({ playlist: await detail(playlist._id, req.user._id) });
+  },
+);
 
 playlistsRouter.delete('/:id', validate({ params: idParams }), async (req, res) => {
   const playlist = await loadOwned(req.valid.params.id, req.user);
@@ -121,7 +128,8 @@ playlistsRouter.post(
       { _id: playlist._id, [`tracks.${PLAYLIST_MAX_TRACKS - 1}`]: { $exists: false } },
       { $addToSet: { tracks: trackId } },
     );
-    if (result.matchedCount === 0) throw badRequest(`Playlists hold at most ${PLAYLIST_MAX_TRACKS} tracks`);
+    if (result.matchedCount === 0)
+      throw badRequest(`Playlists hold at most ${PLAYLIST_MAX_TRACKS} tracks`);
     res.status(201).json({ added: true, playlist: await detail(playlist._id, req.user._id) });
   },
 );
@@ -131,7 +139,10 @@ playlistsRouter.delete(
   validate({ params: { id: objectId, trackId: objectId } }),
   async (req, res) => {
     const playlist = await loadOwned(req.valid.params.id, req.user);
-    await Playlist.updateOne({ _id: playlist._id }, { $pull: { tracks: req.valid.params.trackId } });
+    await Playlist.updateOne(
+      { _id: playlist._id },
+      { $pull: { tracks: req.valid.params.trackId } },
+    );
     res.json({ playlist: await detail(playlist._id, req.user._id) });
   },
 );

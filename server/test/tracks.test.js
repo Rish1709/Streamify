@@ -15,7 +15,12 @@ describe('catalogue', () => {
     expect(p1.status).toBe(200);
     expect(p1.body.items).toHaveLength(10);
     expect(p1.body.pagination).toEqual({
-      page: 1, limit: 10, total: 25, totalPages: 3, hasNext: true, hasPrev: false,
+      page: 1,
+      limit: 10,
+      total: 25,
+      totalPages: 3,
+      hasNext: true,
+      hasPrev: false,
     });
     // Default sort is newest first.
     expect(p1.body.items[0].title).toBe('Track 24');
@@ -84,7 +89,11 @@ describe('catalogue', () => {
   it('returns a single track, 404 for unknown ids and 400 for malformed ids', async () => {
     const [t] = await makeTracks(1);
     const ok = await request(app).get(`/api/v1/tracks/${t.id}`);
-    expect(ok.body.track).toMatchObject({ id: t.id, title: 'Track 00', streamUrl: `/api/v1/tracks/${t.id}/stream` });
+    expect(ok.body.track).toMatchObject({
+      id: t.id,
+      title: 'Track 00',
+      streamUrl: `/api/v1/tracks/${t.id}/stream`,
+    });
     expect(ok.body.track).not.toHaveProperty('audioFile');
     expect((await request(app).get('/api/v1/tracks/aaaaaaaaaaaaaaaaaaaaaaaa')).status).toBe(404);
     expect((await request(app).get('/api/v1/tracks/not-an-id')).status).toBe(400);

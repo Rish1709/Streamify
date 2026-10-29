@@ -13,7 +13,13 @@ function generateCode() {
 export async function createRoom({ name, isPublic, controlMode }, user) {
   for (let attempt = 0; attempt < 5; attempt++) {
     try {
-      return await Room.create({ code: generateCode(), name, isPublic, controlMode, host: user._id });
+      return await Room.create({
+        code: generateCode(),
+        name,
+        isPublic,
+        controlMode,
+        host: user._id,
+      });
     } catch (err) {
       if (err?.code !== 11000) throw err; // retry only on code collision
     }
@@ -86,7 +92,13 @@ async function reduce(room, userId, action, now) {
   };
   const at = (trackId, positionSec, isPlaying) => ({
     queue,
-    playback: { trackId, positionSec, isPlaying, updatedAt: new Date(now), version: pb.version + 1 },
+    playback: {
+      trackId,
+      positionSec,
+      isPlaying,
+      updatedAt: new Date(now),
+      version: pb.version + 1,
+    },
   });
   const step = (dir) => {
     const idx = current ? queue.indexOf(current) : -1;
@@ -110,7 +122,11 @@ async function reduce(room, userId, action, now) {
       requireControl();
       if (!current) throw badRequest('Nothing is playing');
       const { durationSec } = await loadTrack(current);
-      return at(current, clamp(action.positionSec ?? currentPosition(pb, now), 0, durationSec), false);
+      return at(
+        current,
+        clamp(action.positionSec ?? currentPosition(pb, now), 0, durationSec),
+        false,
+      );
     }
     case 'seek': {
       requireControl();
